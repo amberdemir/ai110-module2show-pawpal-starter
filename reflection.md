@@ -7,6 +7,8 @@
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
 
+
+The 3 core actions that a user should be able to perfrom are adding an owner and a pet so the app knows who the care plan is for. Second add and edit care task with duration and priority. And lastly generate a daily plan that fits the owners' avalaible time and explains why tasks were chosen and ordered this way
 **b. Design changes**
 
 - Did your design change during implementation?
