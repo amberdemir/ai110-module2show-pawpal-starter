@@ -33,11 +33,14 @@ I also decided that completed tasks don't go in the plan or the skipped list, an
 
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
+My scheduler looks at three things: how many minutes the owner has available, each task's priority (high, medium, or low), and how long each task takes. It also skips tasks that are already completed. I decided time matters most because the plan has to fit the owner's day or it isn't useful. Priority comes next so important things like feeding and meds get picked before optional things like grooming. Duration is the tiebreaker, so when two tasks have the same priority the shorter one goes first and more tasks fit. I left owner preferences out of this version to keep things simple.
+
 
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+My scheduler fills the day greedily. It sorts tasks by priority and then duration, and adds each one if it still fits in the time left. This isn't always the best possible plan. A long high-priority task could get skipped even if a few shorter low-priority tasks would have fit in the leftover time. I think that's okay here because it's simple, fast, and easy to explain to the owner, and the app is supposed to explain its plan.
 
 ---
 
@@ -48,11 +51,16 @@ I also decided that completed tasks don't go in the plan or the skipped list, an
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
 
+I used AI to brainstorm the four classes, draw the UML diagram, write the class skeleton, review that skeleton, and then implement the logic, the demo script, and the tests. The most helpful prompts were specific ones, like asking it to suggest changes first and wait for my approval before editing any files.
+
+
 **b. Judgment and verification**
+
 
 - Describe one moment where you did not accept an AI suggestion as-is.
 - How did you evaluate or verify what the AI suggested?
 
+I didn't just accept everything the AI suggested. After it reviewed my skeleton, I went through its suggestions and picked which ones to approve, and I told it not to touch the starter repo's `uml.mmd`. To check its work, I read the changed files, ran `python main.py` to make sure the schedule looked right and that Grooming got skipped when time ran short, and ran pytest myself. The AI's pytest run failed because its shell was using a different project's Python, so I ran the tests in my own `.venv` to confirm they passed. I also noticed that the "skipped" message compares a task to the time left after the whole plan is filled, which isn't exactly the time left when that task was considered.
 ---
 
 ## 4. Testing and Verification
