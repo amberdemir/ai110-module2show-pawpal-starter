@@ -74,6 +74,25 @@ python -m pytest
 
 Sample test output:
 
+The tests cover:
+- Sorting tasks by time, including tasks added out of order
+- Recurring tasks (daily and weekly create the next task, "once" tasks don't, completing twice doesn't duplicate)
+- Conflict detection for tasks at the same time, and no warning for different times
+- Filtering by pet and completion status
+- Edge cases: a pet with no tasks, completed tasks left out of the plan, and tasks that don't fit going to skipped
+
+Sample test output:
+
+```
+tests/test_pawpal.py .................                                               [100%]
+
+==================================== 17 passed in 0.03s ====================================
+```
+
+Confidence level: ★★★★☆ (4/5). The tests cover the main behaviors and several edge cases. Next I'd test overlapping durations, since the conflict check only catches exact time matches.
+
+
+
 ```
 tests/test_pawpal.py::test_mark_complete_changes_status PASSED           [ 50%]
 tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [100%]
