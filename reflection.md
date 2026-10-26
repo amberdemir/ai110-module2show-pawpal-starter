@@ -9,6 +9,9 @@
 
 
 The 3 core actions that a user should be able to perfrom are adding an owner and a pet so the app knows who the care plan is for. Second add and edit care task with duration and priority. And lastly generate a daily plan that fits the owners' avalaible time and explains why tasks were chosen and ordered this way
+
+
+My initial UML design has four classes. Owner stores the owner's name and how much time they have each day, and keeps track of their pets. Pet stores the pet's name and species and holds its list of care tasks. Task represents one care activity with a title, duration, priority, and whether it's completed. Scheduler takes the owner's tasks and builds a daily plan that fits their available time, then explains why it chose that plan.
 **b. Design changes**
 
 - Did your design change during implementation?
