@@ -74,32 +74,33 @@ else:
                 )
                 st.success(f"Added '{task_title.strip()}' for {pet.name}.")
 
-    for pet in owner.pets:
-        st.markdown(f"**{pet.name}** ({pet.species})")
-        if pet.get_tasks():
-            st.table(
-                [
-                    {
-                        "Time": t.time,
-                        "Task": t.title,
-                        "Duration (min)": t.duration_minutes,
-                        "Priority": t.priority,
-                        "Frequency": t.frequency,
-                    }
-                    for t in pet.get_tasks()
-                ]
-            )
-        else:
-            st.caption("No tasks yet.")
+    # Pets at a glance, so pets without tasks still show up.
+    st.caption(" · ".join(f"{p.name} ({p.species}): {len(p.get_tasks())} task(s)" for p in owner.pets))
+
+# Fresh Scheduler each rerun; it reads the same session Owner, so it always sees current tasks.
+scheduler = Scheduler(owner)
 
 st.divider()
 
-st.subheader("Build Schedule")
-if st.button("Generate schedule"):
-    scheduler = Scheduler(owner)
-    plan = scheduler.generate_plan()
-    if plan:
-        st.markdown("### Today's Schedule")
+st.subheader("Task List")
+# A message saved before st.rerun() so it survives the rerun after marking a task complete.
+if "flash" in st.session_state:
+    st.success(st.session_state.pop("flash"))
+
+if not owner.get_all_tasks():
+    st.info("No tasks yet. Add a task above to see it here.")
+else:
+    col1, col2 = st.columns(2)
+    with col1:
+        pet_filter = st.selectbox("Show pet", ["All pets"] + [p.name for p in owner.pets])
+    with col2:
+        status_filter = st.radio("Show status", ["All", "Not completed", "Completed"], horizontal=True)
+
+    completed = {"All": None, "Not completed": False, "Completed": True}[status_filter]
+    filtered = scheduler.filter_tasks(
+        pet_name=None if pet_filter == "All pets" else pet_filter, completed=completed
+    )
+    if filtered:
         st.table(
             [
                 {
@@ -108,12 +109,77 @@ if st.button("Generate schedule"):
                     "Pet": t.pet_name,
                     "Duration (min)": t.duration_minutes,
                     "Priority": t.priority,
+                    "Frequency": t.frequency,
+                    "Due": str(t.due_date),
+                    "Status": "✅ done" if t.completed else "to do",
                 }
-                for t in plan
+                for t in scheduler.sort_by_time(filtered)
             ]
         )
     else:
-        st.warning("Nothing to schedule. Add some tasks first.")
-    for conflict in scheduler.detect_conflicts():
-        st.warning(conflict)
-    st.text(scheduler.explain_plan())
+        st.caption("No tasks match this filter.")
+
+    st.markdown("**Mark a task complete**")
+    open_tasks = scheduler.sort_by_time(scheduler.filter_tasks(completed=False))
+    if not open_tasks:
+        st.caption("Everything is done. 🎉")
+    else:
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            choice = st.selectbox(
+                "Task to complete",
+                range(len(open_tasks)),
+                format_func=lambda i: f"{open_tasks[i].time} {open_tasks[i].title} "
+                f"({open_tasks[i].pet_name}, due {open_tasks[i].due_date})",
+                label_visibility="collapsed",
+            )
+        with col2:
+            if st.button("Mark complete"):
+                task = open_tasks[choice]
+                next_task = scheduler.mark_task_complete(task)
+                if next_task:
+                    st.session_state.flash = (
+                        f"Completed '{task.title}' for {task.pet_name}. "
+                        f"It repeats {task.frequency}, so the next one was added for {next_task.due_date}."
+                    )
+                else:
+                    st.session_state.flash = f"Completed '{task.title}' for {task.pet_name}."
+                st.rerun()
+
+st.divider()
+
+st.subheader("Build Schedule")
+if st.button("Generate schedule"):
+    st.session_state.show_plan = True
+
+# Keep showing the schedule after other actions (like marking a task complete) instead of hiding it.
+if st.session_state.get("show_plan"):
+    if not owner.get_all_tasks():
+        st.info("No tasks yet. Add a pet and a task above, then generate a schedule.")
+    else:
+        plan = scheduler.sort_by_time(scheduler.generate_plan())
+        if plan:
+            used = sum(t.duration_minutes for t in plan)
+            st.success(f"Plan generated: {len(plan)} task(s), {used} of {owner.available_minutes} minutes used.")
+            st.markdown("### Today's Schedule")
+            st.table(
+                [
+                    {
+                        "Time": t.time,
+                        "Task": t.title,
+                        "Pet": t.pet_name,
+                        "Duration (min)": t.duration_minutes,
+                        "Priority": t.priority,
+                    }
+                    for t in plan
+                ]
+            )
+        else:
+            st.info("Nothing left to schedule today. All of today's tasks are done or don't fit.")
+
+        for conflict in scheduler.detect_conflicts():
+            st.warning(
+                f"⚠️ {conflict}. These tasks start at the same time. "
+                f"Try changing the start time of one of them."
+            )
+        st.text(scheduler.explain_plan())

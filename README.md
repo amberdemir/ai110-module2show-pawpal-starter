@@ -109,14 +109,99 @@ tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [100%]
 | Filtering | `Scheduler.filter_tasks()` | Filters by pet name and/or completion status |
 | Conflict handling | `Scheduler.detect_conflicts()` | Returns warnings for incomplete tasks at the same date and time; conflicting tasks still get scheduled |
 | Recurring tasks | `Scheduler.mark_task_complete()` | Daily and weekly tasks create a new task due 1 or 7 days later; "once" tasks don't repeat |
+
+
+
+##  Features
+
+- **Priority-based planning:** `Scheduler.generate_plan()` fills the owner's available minutes with high-priority tasks first (shortest first within a priority), skips tasks that don't fit, and orders the final plan by start time
+- **Sorting by time:** `Scheduler.sort_by_time()` orders tasks by their "HH:MM" start time
+- **Filtering:** `Scheduler.filter_tasks()` filters tasks by pet and/or completion status
+- **Conflict warnings:** `Scheduler.detect_conflicts()` warns when incomplete tasks share the same date and time, for the same pet or different pets
+- **Recurring tasks:** `Scheduler.mark_task_complete()` completes a task and, for daily or weekly tasks, adds the next one due 1 or 7 days later ("once" tasks don't repeat)
+- **Plan explanations:** `Scheduler.explain_plan()` explains why each task was picked or skipped
+
 ## 📸 Demo Walkthrough
 
-Describe your app in numbered steps so a reader can follow along without watching a video:
+The Streamlit app (`streamlit run app.py`) lets you set the owner's name and available minutes, add pets, and add tasks with a duration, priority, frequency, and start time. A **Task List** shows every task sorted by time, with filters for pet and completion status and a control to mark a task complete. **Build Schedule** generates today's plan as a table, shows a warning for each scheduling conflict, and explains which tasks were picked or skipped.
 
-1. <!-- Describe this step -->
-2. <!-- Describe this step -->
-3. <!-- Describe this step -->
-4. <!-- Describe this step -->
-5. <!-- Add more steps as needed -->
+Example workflow:
 
-**Screenshot or video** *(optional)*: <!-- Insert a screenshot or link to a demo video here -->
+1. Enter the owner's name and available minutes at the top of the page (for example, Jordan with 90 minutes).
+2. Under **Pets**, type "Biscuit", choose "dog", and click **Add pet**. Add a second pet, "Mochi" (cat), the same way.
+3. Under **Tasks**, add a few tasks with different start times, such as "Morning walk" for Biscuit at 07:30 (high, daily), "Feeding" for Mochi at 12:00 (high, daily), and "Grooming" for Biscuit at 16:00 (low, weekly).
+4. Click **Generate schedule**. A success message shows how many tasks were planned and how many minutes they use, followed by today's schedule sorted by time and an explanation of the plan.
+5. Add two tasks at the same start time, for example "Breakfast" for Biscuit and "Play session" for Mochi, both at 08:00. The schedule now shows a warning naming both tasks and the time, with a suggestion to change one start time.
+6. In the **Task List**, choose Biscuit's daily "Morning walk" under **Mark a task complete** and click **Mark complete**. A success message confirms the next walk was added for tomorrow, and the new task appears in the list with tomorrow's due date. It stays out of today's schedule.
+
+This walkthrough shows priority-based planning, sorting by time, filtering by pet and status, conflict detection, daily recurrence, and plan explanations.
+
+**Sample CLI output (`python main.py`):**
+
+```
+All tasks (in the order they were added)
+----------------------------------------------------------------------
+  16:00  Grooming        Biscuit   45 min   low     weekly  2026-10-25  todo
+  07:30  Morning walk    Biscuit   30 min   high    daily   2026-10-25  todo
+  08:00  Breakfast       Biscuit   5 min    high    daily   2026-10-25  todo
+  18:00  Play session    Mochi     20 min   medium  daily   2026-10-25  todo
+  08:00  Feeding         Mochi     10 min   high    daily   2026-10-25  todo
+  11:00  Vet visit       Mochi     60 min   medium  once    2026-10-25  todo
+
+Sorted by time
+----------------------------------------------------------------------
+  07:30  Morning walk    Biscuit   30 min   high    daily   2026-10-25  todo
+  08:00  Breakfast       Biscuit   5 min    high    daily   2026-10-25  todo
+  08:00  Feeding         Mochi     10 min   high    daily   2026-10-25  todo
+  11:00  Vet visit       Mochi     60 min   medium  once    2026-10-25  todo
+  16:00  Grooming        Biscuit   45 min   low     weekly  2026-10-25  todo
+  18:00  Play session    Mochi     20 min   medium  daily   2026-10-25  todo
+
+Filtered: Mochi's tasks
+----------------------------------------------------------------------
+  18:00  Play session    Mochi     20 min   medium  daily   2026-10-25  todo
+  08:00  Feeding         Mochi     10 min   high    daily   2026-10-25  todo
+  11:00  Vet visit       Mochi     60 min   medium  once    2026-10-25  todo
+
+Completed 'Morning walk' (daily). Next one added for 2026-10-26.
+
+Biscuit's tasks after completing the walk
+----------------------------------------------------------------------
+  16:00  Grooming        Biscuit   45 min   low     weekly  2026-10-25  todo
+  07:30  Morning walk    Biscuit   30 min   high    daily   2026-10-25  done
+  08:00  Breakfast       Biscuit   5 min    high    daily   2026-10-25  todo
+  07:30  Morning walk    Biscuit   30 min   high    daily   2026-10-26  todo
+
+Filtered: completed tasks
+----------------------------------------------------------------------
+  07:30  Morning walk    Biscuit   30 min   high    daily   2026-10-25  done
+
+Filtered: incomplete tasks
+----------------------------------------------------------------------
+  16:00  Grooming        Biscuit   45 min   low     weekly  2026-10-25  todo
+  08:00  Breakfast       Biscuit   5 min    high    daily   2026-10-25  todo
+  07:30  Morning walk    Biscuit   30 min   high    daily   2026-10-26  todo
+  18:00  Play session    Mochi     20 min   medium  daily   2026-10-25  todo
+  08:00  Feeding         Mochi     10 min   high    daily   2026-10-25  todo
+  11:00  Vet visit       Mochi     60 min   medium  once    2026-10-25  todo
+
+Conflict check
+----------------------------------------------------------------------
+  WARNING: Conflict on 2026-10-25 at 08:00: Breakfast (Biscuit), Feeding (Mochi)
+
+Today's Schedule
+==============================================================
+Time   Task            Pet       Duration  Priority
+--------------------------------------------------------------
+08:00  Breakfast       Biscuit   5 min     high
+08:00  Feeding         Mochi     10 min    high
+18:00  Play session    Mochi     20 min    medium
+
+Amber has 75 minutes today. Tasks were picked by priority (high first), shortest first within a priority, until the time ran out.
+Planned 3 task(s) using 35 min (40 min left).
+  + Breakfast for Biscuit (high, 5 min): fit in the time.
+  + Feeding for Mochi (high, 10 min): fit in the time.
+  + Play session for Mochi (medium, 20 min): fit in the time.
+  - Vet visit for Mochi (medium, 60 min): skipped, it needs more than the 40 min left.
+  - Grooming for Biscuit (low, 45 min): skipped, it needs more than the 40 min left.
+```

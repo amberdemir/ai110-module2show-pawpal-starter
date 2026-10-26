@@ -1,0 +1,49 @@
+classDiagram
+  %% Final design, matching pawpal_system.py.
+  %% PRIORITY_ORDER = {"high": 0, "medium": 1, "low": 2} is a module-level constant used by Scheduler.
+
+  class Owner {
+    +String name
+    +int available_minutes
+    +list~Pet~ pets
+    +add_pet(pet: Pet) None
+    +get_all_tasks() list~Task~
+  }
+  class Pet {
+    +String name
+    +String species
+    +list~Task~ tasks
+    +add_task(task: Task) None
+    +get_tasks() list~Task~
+  }
+  class Task {
+    +String title
+    +int duration_minutes
+    +String priority
+    +bool completed
+    +String pet_name
+    +String time
+    +String frequency
+    +date due_date
+    +mark_complete() None
+  }
+  class Scheduler {
+    +Owner owner
+    +list~Task~ plan
+    +list~Task~ skipped
+    -bool _planned
+    +generate_plan() list~Task~
+    +explain_plan() String
+    +sort_by_time(tasks: list~Task~) list~Task~
+    +filter_tasks(pet_name: String, completed: bool) list~Task~
+    +mark_task_complete(task: Task) Task
+    +detect_conflicts() list~String~
+  }
+
+  Owner "1" --> "*" Pet : has
+  Pet "1" --> "*" Task : has
+  Task ..> Pet : belongs to (by pet_name)
+  Scheduler "1" --> "1" Owner : plans for
+  Scheduler --> "*" Task : plan / skipped
+  Scheduler ..> Pet : adds next occurrence to
+  Scheduler ..> Task : creates next occurrence
