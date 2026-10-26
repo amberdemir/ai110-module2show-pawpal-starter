@@ -44,30 +44,40 @@ pip install -r requirements.txt
 
 ## 🖥️ Sample Output
 
-Paste a sample of your app's CLI or Streamlit output here so a reader can see what a generated plan looks like:
+```
+Today's Schedule
+==============================================================
+Time   Task            Pet       Duration  Priority
+--------------------------------------------------------------
+07:30  Morning walk    Biscuit   30 min    high
+08:00  Feeding         Mochi     10 min    high
+18:00  Play session    Mochi     20 min    medium
 
+Amber has 75 minutes today. Tasks were picked by priority (high first), shortest first within a priority, until the time ran out.
+Planned 3 task(s) using 60 min (15 min left).
+  + Morning walk for Biscuit (high, 30 min): fit in the time.
+  + Feeding for Mochi (high, 10 min): fit in the time.
+  + Play session for Mochi (medium, 20 min): fit in the time.
+  - Grooming for Biscuit (low, 45 min): skipped, it needs more than the 15 min left.
 ```
-# e.g.:
-# Daily plan for Biscuit (Golden Retriever):
-#   08:00 — Morning walk (30 min) [priority: high]
-#   09:00 — Feeding (10 min) [priority: high]
-#   ...
-```
+
+## Implementation Summary
+
+PawPal+ is built from four classes in `pawpal_system.py`. An `Owner` holds multiple `Pet`s, and each `Pet` holds its own list of `Task`s. Each `Task` has a title, duration, priority, start time, frequency, and completion status. The `Scheduler` gets every task through `Owner.get_all_tasks()`, skips completed ones, sorts by priority and then duration, and fills the owner's available minutes greedily. Tasks that don't fit go in a skipped list. The final plan is sorted by time, and `explain_plan()` says why each task was picked or skipped. `main.py` is a terminal demo, and `tests/test_pawpal.py` checks task completion and task addition.
 
 ## 🧪 Testing PawPal+
 
 ```bash
 # Run the full test suite:
-pytest
-
-# Run with coverage:
-pytest --cov
+python -m pytest
 ```
 
 Sample test output:
 
 ```
-# Paste your pytest output here
+tests/test_pawpal.py::test_mark_complete_changes_status PASSED           [ 50%]
+tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [100%]
+2 passed in 0.02s
 ```
 
 ## 📐 Smarter Scheduling
