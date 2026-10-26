@@ -17,6 +17,14 @@ My initial UML design has four classes. Owner stores the owner's name and how mu
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+**b. Design changes**
+
+Yes, my design changed after I had AI look over my class skeleton. The first thing I changed was adding a `pet_name` to `Task`, because the Scheduler only got one big list of tasks and couldn't tell which pet each one was for. Second, I added `plan` and `skipped` lists to `Scheduler` so `explain_plan()` could say why a task was left out, not just what got picked. Third, I added a `PRIORITY_ORDER` dictionary, because if you sort "high", "medium", and "low" like normal words you get high, low, medium, which is wrong.
+
+I also decided that completed tasks don't go in the plan or the skipped list, and that generate_plan() clears both lists every time it runs so tasks don't get doubled. Last, I made Owner a dataclass so it matches Pet and Task. After the changes I updated the UML diagram so it matches the code.
+
+
+
 ---
 
 ## 2. Scheduling Logic and Tradeoffs
