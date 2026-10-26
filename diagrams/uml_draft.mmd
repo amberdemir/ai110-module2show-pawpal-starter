@@ -21,6 +21,7 @@ classDiagram
     +String pet_name
     +String time
     +String frequency
+    +date due_date
     +mark_complete() None
   }
   class Scheduler {
@@ -29,6 +30,10 @@ classDiagram
     +list~Task~ skipped
     +generate_plan() list~Task~
     +explain_plan() String
+    +sort_by_time(tasks) list~Task~
+    +filter_tasks(pet_name, completed) list~Task~
+    +mark_task_complete(task) Task
+    +detect_conflicts() list~String~
   }
   Owner "1" --> "*" Pet : has
   Pet "1" --> "*" Task : has

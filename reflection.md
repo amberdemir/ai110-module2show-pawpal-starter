@@ -61,6 +61,8 @@ I used AI to brainstorm the four classes, draw the UML diagram, write the class 
 - How did you evaluate or verify what the AI suggested?
 
 I didn't just accept everything the AI suggested. After it reviewed my skeleton, I went through its suggestions and picked which ones to approve, and I told it not to touch the starter repo's `uml.mmd`. To check its work, I read the changed files, ran `python main.py` to make sure the schedule looked right and that Grooming got skipped when time ran short, and ran pytest myself. The AI's pytest run failed because its shell was using a different project's Python, so I ran the tests in my own `.venv` to confirm they passed. I also noticed that the "skipped" message compares a task to the time left after the whole plan is filled, which isn't exactly the time left when that task was considered.
+
+When I asked the AI how to simplify detect_conflicts(), it suggested a list comprehension to build the warnings. I kept the plain loop instead, because the comprehension packs too much into one line and is harder to read. I did take its suggestions to use defaultdict and to reuse filter_tasks(), and I checked that the existing tests still passed.
 ---
 
 ## 4. Testing and Verification
@@ -70,6 +72,8 @@ I didn't just accept everything the AI suggested. After it reviewed my skeleton,
 - What behaviors did you test?
 - Why were these tests important?
 
+
+My conflict detection only checks for exact matching start times, not overlapping durations. For example, a 30-minute walk at 08:00 and a feeding at 08:15 overlap, but my scheduler won't flag them. I chose this because it's simple, fast, and easy to explain, and it returns a warning instead of crashing. Checking real overlaps would be more accurate, but it needs end times and more edge cases. My scheduler also still schedules conflicting tasks and just warns about them, so the owner can decide what to do.
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?

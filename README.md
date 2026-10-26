@@ -86,11 +86,10 @@ tests/test_pawpal.py::test_add_task_increases_pet_task_count PASSED      [100%]
 
 | Feature | Method(s) | Notes |
 |---------|-----------|-------|
-| Task sorting | | e.g., by priority, duration |
-| Filtering | | e.g., skip tasks if time runs out |
-| Conflict handling | | e.g., overlapping time slots |
-| Recurring tasks | | e.g., daily vs. weekly |
-
+| Task sorting | `Scheduler.sort_by_time()` | Sorts "HH:MM" strings with `sorted()` and a lambda key |
+| Filtering | `Scheduler.filter_tasks()` | Filters by pet name and/or completion status |
+| Conflict handling | `Scheduler.detect_conflicts()` | Returns warnings for incomplete tasks at the same date and time; conflicting tasks still get scheduled |
+| Recurring tasks | `Scheduler.mark_task_complete()` | Daily and weekly tasks create a new task due 1 or 7 days later; "once" tasks don't repeat |
 ## 📸 Demo Walkthrough
 
 Describe your app in numbered steps so a reader can follow along without watching a video:

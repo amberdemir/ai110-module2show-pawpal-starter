@@ -114,4 +114,6 @@ if st.button("Generate schedule"):
         )
     else:
         st.warning("Nothing to schedule. Add some tasks first.")
+    for conflict in scheduler.detect_conflicts():
+        st.warning(conflict)
     st.text(scheduler.explain_plan())
